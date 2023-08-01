@@ -10,7 +10,7 @@ import subprocess
 
 min=12000
 NUM_AGENT =2
-GPU_ID = 0
+GPU_ID = 1
 
 docker1="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=2500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=0 -prefernvidia"
 docker2="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=3500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia" 
@@ -36,8 +36,8 @@ while 1:
     
     sleep(2)
 
-    for x in range(0,NUM_AGENT):
-        _=subprocess.Popen("./run_agent_"+str(x+1)+".sh") #ToDo  run chmod +x run_agent_2.sh also the coordinatpr.py has to be a executable
+    for y in range(0,NUM_AGENT):
+        _=subprocess.Popen("./run_agent_"+str(y+1)+".sh") #ToDo  run chmod +x run_agent_2.sh also the coordinatpr.py has to be a executable
         sleep(2)
 
     sleep(min*60)
