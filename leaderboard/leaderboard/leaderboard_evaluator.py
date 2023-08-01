@@ -400,6 +400,7 @@ class LeaderboardEvaluator(object):
 
         while route_indexer.peek():
             # setup
+            route_indexer = RouteIndexer(args.routes, args.scenarios, args.repetitions)
             config = route_indexer.next()
 
             # run

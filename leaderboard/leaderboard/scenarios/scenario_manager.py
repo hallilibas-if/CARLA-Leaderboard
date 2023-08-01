@@ -62,7 +62,7 @@ class ScenarioManager(object):
         self._running = False
         self._timestamp_last_run = 0.0
         self._timeout = float(timeout)
-        self.ep_leng=1600 #Shawan did it
+        self.ep_leng=1600 #hallilibas-if did it
         # Used to detect if the simulation is down
         watchdog_timeout = max(5, self._timeout - 2)
         self._watchdog = Watchdog(watchdog_timeout)
