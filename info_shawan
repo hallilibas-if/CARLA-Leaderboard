@@ -1,0 +1,13 @@
+nicht installiert:
+-matplotlib==3.0.3
+-open3d==0.9.0.0
+
+Änderungen:
+-pip install torch==1.9.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
+https://forum.opennmt.net/t/cuda-error-no-kernel-image-is-available-for-execution-on-the-device/4644
+
+
+USE the docker!
+sudo docker run --privileged --gpus device=1 --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=2000 -resx=400 -resy=300 -benchmark -graphicsadapter=1
+
+sudo docker run --privileged --gpus device=0 --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=4000 -resx=400 -resy=300 -benchmark -opengl
