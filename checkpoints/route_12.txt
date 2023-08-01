@@ -1,0 +1,45 @@
+{
+    "_checkpoint": {
+        "global_record": {},
+        "progress": [
+            1,
+            10000
+        ],
+        "records": [
+            {
+                "index": 0,
+                "infractions": {
+                    "collisions_layout": [],
+                    "collisions_pedestrian": [],
+                    "collisions_vehicle": [],
+                    "outside_route_lanes": [],
+                    "red_light": [],
+                    "route_dev": [],
+                    "route_timeout": [],
+                    "stop_infraction": [],
+                    "vehicle_blocked": []
+                },
+                "meta": {
+                    "duration_game": 14.70000021904707,
+                    "duration_system": 105.4373881816864,
+                    "route_length": 1205.8500794398365
+                },
+                "route_id": "RouteScenario_12",
+                "scores": {
+                    "score_composed": 1.70502619301782,
+                    "score_penalty": 1.0,
+                    "score_route": 1.70502619301782
+                },
+                "status": "Failed"
+            }
+        ]
+    },
+    "eligible": false,
+    "entry_status": "Started",
+    "labels": [],
+    "sensors": [
+        "carla_camera",
+        "carla_camera"
+    ],
+    "values": []
+}
