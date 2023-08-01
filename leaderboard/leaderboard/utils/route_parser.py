@@ -10,6 +10,7 @@ from collections import OrderedDict
 import json
 import math
 import xml.etree.ElementTree as ET
+import random 
 
 import carla
 from agents.navigation.local_planner import RoadOption
@@ -54,6 +55,20 @@ class RouteParser(object):
 
         list_route_descriptions = []
         tree = ET.parse(route_filename)
+
+        #Changed by hallilibas-if
+        root = tree.getroot()
+
+        # Assume the root is <routes>
+        for route in root.findall('route'):
+            waypoints = route.findall('waypoint')
+            # decide how many waypoints to remove
+            num_to_remove = random.randint(0, int(len(waypoints)/2))
+            # remove the first num_to_remove waypoints
+            for _ in range(num_to_remove):
+                route.remove(waypoints.pop(0))
+
+
         for route in tree.iter("route"):
 
             route_id = route.attrib['id']

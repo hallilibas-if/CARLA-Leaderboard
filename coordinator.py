@@ -10,7 +10,7 @@ import subprocess
 
 min=12000
 NUM_AGENT =2
-GPU_ID = 1
+GPU_ID = 0
 
 docker1="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=2500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=0 -prefernvidia"
 docker2="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=3500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia" 
