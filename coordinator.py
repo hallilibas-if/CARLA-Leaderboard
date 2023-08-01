@@ -10,11 +10,12 @@ import subprocess
 
 min=12000
 NUM_AGENT =8
+GPU_ID = 0
 
-docker1="docker run --privileged --gpus device=0 --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=2500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=0 -prefernvidia"
-docker2="docker run --privileged --gpus device=0 --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=3500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia" 
-docker3="docker run --privileged --gpus device=1 --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=4500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia"
-docker4="docker run --privileged --gpus device=1 --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=5500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia"
+docker1="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=2500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=0 -prefernvidia"
+docker2="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=3500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia" 
+docker3="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=4500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia"
+docker4="docker run --privileged --gpus device="+str(GPU_ID)+" --net=host -e DISPLAY=$DISPLAY carlasim/carla:0.9.10.1 /bin/bash ./CarlaUE4.sh -quality-level=Epic -world-port=5500 -resx=400 -resy=300 -benchmark -fps 10 -graphicsadapter=1 -prefernvidia"
 
 while 1:
     for x in range(0,NUM_AGENT):
