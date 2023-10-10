@@ -6,9 +6,19 @@ from PIL import Image, ImageDraw
 import numpy as np
 import cv2
 #import detector.demo_yolopv2_post_onnx as detector #Install it from the official repo: https://github.com/conda-forge/onnxruntime-feedstock
-#import copy
+import copy
 from pynput import keyboard
 import ray   
+
+import onnx
+import tensorflow as tf
+from torch.autograd import Variable
+from onnx_tf.backend import prepare
+
+from onnx import numpy_helper
+import onnxruntime
+from collections import deque
+
 ray.init(address='auto') 
 #ray.init(address="137.226.131.47:56429") # when on same mashine
 sard_buffer = ray.get_actor(name="carla_com", namespace="rllib_carla")       
@@ -19,13 +29,27 @@ def get_entry_point():
 
 class MyAgent(AutonomousAgent):
     def __init__(self, path_to_conf_file="", *args, **kwargs):
-        self.image = np.zeros((182,182,3))
+        self.image = np.zeros((3,128,128))
         self.image_record = np.zeros((182,182,3))
+
+        self.image_stack = deque(maxlen=4) 
+        self.image_stack.appendleft(self.image)
+        self.image_stack.appendleft(self.image)
+        self.image_stack.appendleft(self.image)
+        self.image_stack.appendleft(self.image)
+        # Shape of self.image_stack --> (4,3,128,128)
+
+
+        self.feature_map = np.zeros((4,4,2048))
+
         self.rewards = dict()
         self.scalarInput = []
         self.done = False
         self.ep_steps = 0
-        
+
+        self.session = onnxruntime.InferenceSession("/home/shawan/Desktop/slowfast-model-load/onnxModels/r18_byol_Init.onnx", None)
+        self.input_name = self.session.get_inputs()[0].name
+
         #self.detector = detector.Mydetector()
         #input_size = "192,320"
         #self.input_size = [int(i) for i in input_size.split(',')]
@@ -42,7 +66,7 @@ class MyAgent(AutonomousAgent):
                         'type': 'sensor.camera.rgb',
                         'x': 1.9, 'y': 0.0, 'z': 1.3,
                         'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
-                        'width': 182, 'height': 182, 'fov': 100,
+                        'width': 128, 'height': 128, 'fov': 100,
                         'id': 'rgb'
                         },
                     {
@@ -63,7 +87,7 @@ class MyAgent(AutonomousAgent):
         self.key = key
         image = np.array(input_data['rgb'])
         image1= Image.fromarray(image[1])
-        self.image  = cv2.cvtColor(np.array(image1), cv2.COLOR_BGR2RGB)
+        image1  = cv2.cvtColor(np.array(image1), cv2.COLOR_BGR2RGB)
 
         """
         image_record = np.array(input_data['rgb_record'])
@@ -73,10 +97,28 @@ class MyAgent(AutonomousAgent):
         """
         control = carla.VehicleControl()
         
-        
-        """
+ 
         image2 = copy.deepcopy(np.array(image1))
-        draw_debug  = cv2.cvtColor(np.array(image1), cv2.COLOR_BGR2RGB)
+        inputs =  (image2/128.0)-1.0
+        print("Shape of inputs: ", np.array(inputs).shape) #(128,128,3)
+
+        self.image = inputs.transpose(2, 0, 1) #(3, 128,128)
+        print("Shape of inputs after transpose: ", np.array(self.image).shape) #(3, 128,128)
+        self.image_stack.appendleft(self.image)
+
+        # Convert the deque of images into a numpy array, ensuring the correct shape
+        image_array = np.concatenate([np.expand_dims(img, axis=0) for img in self.image_stack], axis=0)
+        print("Shape of image_array: ", image_array.shape) #( 4, 3, 128,128)
+
+        input_raw = np.array(image_array[None,None,:,:,:,:]) 
+        input_raw =  tf.cast(input_raw, tf.float32)
+        feature_map_raw = self.session.run(None, {self.input_name: input_raw})[-1]
+        print("Shape of the encoder output: ", np.array(feature_map_raw).shape) #(1, 1, 8, 8, 128)
+        feature_map_raw = tf.squeeze(feature_map_raw, [0])
+        self.feature_map = tf.squeeze(feature_map_raw, [0])
+        print("Batch size feature_map: ", np.array(self.feature_map).shape) # Attention! We need 4 dims ! -->(BS, 4, 4, 2048)     
+
+        """
         drivable_area, lane_line, bboxes, scores, class_ids = self.detector.run_inference(self.input_size,image2, 0.5)
         # Draw
         draw_debug = self.draw_debug(
@@ -88,7 +130,7 @@ class MyAgent(AutonomousAgent):
             class_ids,
         )
         self.image = cv2.resize(draw_debug, (256,144))
-        """        
+        """
 
         #For Keyboard control    
         self.rewards = dict()
@@ -104,7 +146,7 @@ class MyAgent(AutonomousAgent):
         self.scalarInput.append(reward[5].current_speed)
         
         #print("Print I Agent {}: ".format(idAgent))
-        action=ray.get(sard_buffer.get_actions.remote(self.idAgent,self.key,self.image,self.scalarInput,self.rewards,self.done))
+        action=ray.get(sard_buffer.get_actions.remote(self.idAgent,self.key,feature_map,self.scalarInput,self.rewards,self.done))
         
         control.steer = action[0]
         control.throttle = action[1]
@@ -186,6 +228,6 @@ class MyAgent(AutonomousAgent):
         if self.done == False:
             self.done = True      
             #self.showImage("destroy")
-            _=ray.get(sard_buffer.get_actions.remote(self.idAgent,self.key, self.image,self.scalarInput,self.rewards,self.done)) #The extra setted done flag should be send afterwards to rllib buffer
+            _=ray.get(sard_buffer.get_actions.remote(self.idAgent,self.key, self.feature_map,self.scalarInput,self.rewards,self.done)) #The extra setted done flag should be send afterwards to rllib buffer
         else:
             pass
